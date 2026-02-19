@@ -1,0 +1,11 @@
+# Rust build artifacts
+target/
+**/*.rs.bk
+
+# Application data (local only)
+todos.json
+
+# IDE settings (optional)
+.vscode/
+.idea/
+*.swp
