@@ -1,85 +1,9 @@
-use clap::{Parser, Subcommand, ValueEnum};
-use serde::{Deserialize, Serialize};
-use std::fmt;
-use std::fs;
-use std::path::PathBuf;
+mod todo;
+mod storage;
 
-// ─── Data Model ────────────────────────────────────────────
-
-/// Priority levels for a todo item.
-#[derive(Debug, Clone, Copy, ValueEnum, Serialize, Deserialize, PartialEq)]
-pub enum Priority {
-    Low,
-    Medium,
-    High,
-}
-
-use colored::*;
-
-impl fmt::Display for Priority {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Priority::Low => write!(f, "{}", "Low".green()),
-            Priority::Medium => write!(f, "{}", "Medium".yellow()),
-            Priority::High => write!(f, "{}", "High".red()),
-        }
-    }
-}
-
-/// A single todo item.
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Todo {
-    pub id: usize,
-    pub title: String,
-    pub priority: Priority,
-    pub done: bool,
-}
-
-impl fmt::Display for Todo {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let status = if self.done { "✓".green() } else { "○".red() };
-        let title = if self.done {
-            self.title.strikethrough().dimmed()
-        } else {
-            self.title.normal()
-        };
-        
-        write!(
-            f,
-            "[{}] #{} - {} ({})",
-            status, self.id, title, self.priority
-        )
-    }
-}
-
-// ─── Storage ───────────────────────────────────────────────
-
-/// Returns the path to the todos.json file (in the current directory).
-fn get_storage_path() -> PathBuf {
-    PathBuf::from("todos.json")
-}
-
-/// Load all todos from the JSON file. Returns an empty Vec if the file doesn't exist.
-fn load_todos() -> Vec<Todo> {
-    let path = get_storage_path();
-    if !path.exists() {
-        return Vec::new();
-    }
-    let data = fs::read_to_string(&path).expect("Failed to read todos.json");
-    serde_json::from_str(&data).expect("Failed to parse todos.json")
-}
-
-/// Save all todos to the JSON file (pretty-printed).
-fn save_todos(todos: &[Todo]) {
-    let path = get_storage_path();
-    let data = serde_json::to_string_pretty(todos).expect("Failed to serialize todos");
-    fs::write(&path, data).expect("Failed to write todos.json");
-}
-
-/// Determine the next available ID by finding the current maximum.
-fn next_id(todos: &[Todo]) -> usize {
-    todos.iter().map(|t| t.id).max().unwrap_or(0) + 1
-}
+use clap::{Parser, Subcommand};
+use crate::todo::{Priority, Todo};
+use crate::storage::{load_todos, save_todos, next_id};
 
 // ─── CLI Definition ────────────────────────────────────────
 

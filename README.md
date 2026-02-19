@@ -41,3 +41,6 @@ cargo run -- done 1
 - **Clap** (CLI Parser)
 - **Serde** (JSON Persistence)
 - **Colored** (Terminal Colors)
+
+## technical Documentation
+For a deep dive into the code architecture, see [TECHNICAL.md](TECHNICAL.md).
